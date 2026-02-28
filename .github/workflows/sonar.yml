@@ -1,25 +1,55 @@
-name: SonarCloud
+name: CI SonarCloud
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
-    name: Build and analyze
+  sonar-analysis:
+    name: SonarCloud Analysis
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Récupérer le projet
       - uses: actions/checkout@v4
 
-      - name: Setup Java
+      # 2️⃣ Installer Java 17 (obligatoire pour SonarScanner)
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
+      # 3️⃣ Installer Node (si backend JS existe)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # 4️⃣ Installer dépendances backend
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm install
+
+      # 5️⃣ Exécuter tests + coverage
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test -- --coverage
+
+      # 6️⃣ SonarCloud Scan ⭐⭐⭐⭐⭐
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+        with:
+          args: >
+            -Dsonar.projectKey=AmiraAyaGH_tlaqCalculatrice
+            -Dsonar.organization=AmiraAyaGH
+            -Dsonar.sources=backend
+            -Dsonar.tests=backend
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
