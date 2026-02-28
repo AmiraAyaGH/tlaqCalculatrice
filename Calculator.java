@@ -10,11 +10,12 @@ public class Calculator {
  System.out.println(i);
   }
 }
- public boolean isPositive(int n){
- if(n>0){
+ public boolean isPositive(int s){
+ if(s>0){
  return true;
  } else {
   return false;
 }
  }
 }
+
